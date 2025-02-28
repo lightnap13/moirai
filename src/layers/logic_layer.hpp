@@ -1,6 +1,8 @@
 #ifndef MOIRAI_SRC_LAYERS_LOGICLAYERHPP_
 #define MOIRAI_SRC_LAYERS_LOGICLAYERHPP_
 
+#include "layers/data_layer.hpp"
+
 #include <cstdint>
 
 namespace moirai
@@ -18,6 +20,9 @@ namespace moirai
     {
       public:
         void update_node_geometry(sNodePositionData* node_position_data);
+
+      private:
+        void compute_node_rows(sNodePositionData* node_position_data, int32_t node_rows[MAX_NODES]);
     };
 }
 
