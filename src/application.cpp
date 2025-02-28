@@ -41,19 +41,31 @@ namespace moirai
 
         // TODO: Remove this
         // We are adding nodes manually to see if things work.
-        int32_t first_node_id = _data_layer.add_node();
-        sNode   first_node;
-        strcpy(first_node.title, "Node number 1");
-        first_node.status = sNode::eStatus::done;
-        _data_layer.set_node(first_node_id, &first_node);
+        auto add_node = [&](char* title)
+        {
+            int32_t node_id = _data_layer.add_node();
+            sNode   node;
+            strcpy(node.title, title);
+            node.status = sNode::eStatus::done;
+            _data_layer.set_node(node_id, &node);
+            return node_id;
+        };
 
-        int32_t second_node_id = _data_layer.add_node();
-        sNode   second_node;
-        strcpy(second_node.title, "I am the secon node!\nThis is second text");
-        second_node.status = sNode::eStatus::open;
-        _data_layer.set_node(second_node_id, &second_node);
+        char    title_1[32] = "Node number 1";
+        int32_t node_id_1 = add_node(title_1);
 
-        _data_layer.set_parent(second_node_id, first_node_id);
+        char    title_2[64] = "I am the secon node!\nThis is second text";
+        int32_t node_id_2 = add_node(title_2);
+
+        char    title_3[64] = "Node 3";
+        int32_t node_id_3 = add_node(title_3);
+
+        char    title_4[64] = "Node namba 4";
+        int32_t node_id_4 = add_node(title_4);
+
+        _data_layer.set_parent(node_id_2, node_id_1);
+        _data_layer.set_parent(node_id_3, node_id_1);
+        _data_layer.set_parent(node_id_4, node_id_2);
     }
 
     void cApplication::update()
