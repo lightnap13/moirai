@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
 """
-Morirai project manager.
+Moirai project manager.
 This script is meant for building, dependency handling and cleaning build artifacts.
 In general it handles all project actions whose commands are long.
 """
@@ -16,6 +16,15 @@ import time
 import shutil
 import subprocess
 import sys
+
+
+PROJECT_NAME = "moirai"
+NECESSARY_DIRECTORIES = [
+    "bin",
+    "build",
+    "external/raylib",
+    "external/catch2",
+]
 
 
 def configure_argument_parser(parser):
@@ -46,41 +55,26 @@ def configure_argument_parser(parser):
 
 def create_required_project_directories():
     """
-    Creates all directories required by the project that are not present by default (such as bin, build). \
+    Creates all directories required by the project that are not present by default (defined in NECESSARY_DIRECTORIES). \
     Will not fail if directories already exist. \
     Techinically not needed since cmake creates the directories if they are not found.
     """
 
     main_project_dir_path = pathlib.Path(__file__).resolve().parents[1]
-    build_dir_path = main_project_dir_path.joinpath("build")
-    bin_dir_path = main_project_dir_path.joinpath("bin")
-    external_dir_path = main_project_dir_path.joinpath("external")
-    raylib_dir_path = external_dir_path.joinpath("raylib")
-    catch2_dir_path = external_dir_path.joinpath("catch2")
 
-    try:
-        if not build_dir_path.exists():
-            print("[DO] PROJECT_ROOT/build directory does not exist. Creating...")
-            build_dir_path.mkdir()
+    for directory in NECESSARY_DIRECTORIES:
+        path = main_project_dir_path.joinpath(directory)
+        try:
+            if not path.exists():
+                print(
+                    "[DO] PROJECT_ROOT/{0} Does not exist. Creating...".format(
+                        directory
+                    )
+                )
+                path.mkdir()
 
-        if not bin_dir_path.exists():
-            print("[DO] PROJECT_ROOT/bin directory does not exist. Creating...")
-            bin_dir_path.mkdir()
-
-        if not raylib_dir_path.exists():
-            print(
-                "[DO] PROJECT_ROOT/external/raylib directory does not exist. Creating..."
-            )
-            raylib_dir_path.mkdir()
-
-        if not catch2_dir_path.exists():
-            print(
-                "[DO] PROJECT_ROOT/external/catch2 directory does not exist. Creating..."
-            )
-            catch2_dir_path.mkdir()
-
-    except Exception as e:
-        raise Exception("[DO]: Failed to create directories. Reason: %s" % e)
+        except Exception as e:
+            raise Exception("[DO]: Failed to create directories. Reason: %s" % e)
 
 
 def format_time(seconds):
@@ -119,7 +113,7 @@ def format_time(seconds):
             + "s"
         )
 
-    return "format_time error: could not format value = %s" % seconds
+    # return "format_time error: could not format value = %s" % seconds
 
 
 def delete_directory_contents(dir_path):
@@ -149,28 +143,19 @@ def delete_directory_contents(dir_path):
             )
 
 
-def perform_clean_action(tests):
+def perform_clean_action():
     """
     Cleans all build artifacts from the project.
-
-    param tests: bool which indicates whether to clean the tests files or not.
     """
 
     print("[DO][CLEAN]: Cleaning all previous builds")
     clean_action_start_time = time.time()
 
     main_project_dir_path = pathlib.Path(__file__).resolve().parents[1]
-    build_dir_path = main_project_dir_path.joinpath("build")
-    bin_dir_path = main_project_dir_path.joinpath("bin")
-    external_dir_path = main_project_dir_path.joinpath("external")
-    raylib_dir_path = external_dir_path.joinpath("raylib")
-    catch2_dir_path = external_dir_path.joinpath("catch2")
 
-    delete_directory_contents(raylib_dir_path)
-    if tests:
-        delete_directory_contents(catch2_dir_path)
-    delete_directory_contents(build_dir_path)
-    delete_directory_contents(bin_dir_path)
+    for directory in reversed(NECESSARY_DIRECTORIES):
+        path = main_project_dir_path.joinpath(directory)
+        delete_directory_contents(path)
 
     clean_action_finish_time = time.time() - clean_action_start_time
     print("[DO][CLEAN]: Finished! Took:", format_time(clean_action_finish_time))
@@ -183,7 +168,7 @@ def perform_build_action(tests):
     param tests: bool that indicates whether to build the tests.
     """
 
-    print("[DO][BUILD]: Building the moirai project")
+    print("[DO][BUILD]: Building the {0} project".format(PROJECT_NAME))
     build_action_start_time = time.time()
 
     main_project_dir_path = pathlib.Path(__file__).resolve().parents[1]
@@ -228,7 +213,9 @@ def main():
     """
 
     print("[DO]: Invoked the project manager script")
-    parser = argparse.ArgumentParser(description="Script to manage the moirai project.")
+    parser = argparse.ArgumentParser(
+        description="Script to manage the {0} project.".format(PROJECT_NAME)
+    )
     configure_argument_parser(parser)
     args = parser.parse_args()
 
@@ -240,7 +227,7 @@ def main():
         create_required_project_directories()
 
         if args.clean:
-            perform_clean_action(args.tests)
+            perform_clean_action()
 
         if args.build:
             perform_build_action(args.tests)
